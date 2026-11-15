@@ -6,7 +6,7 @@
 /*   By: weitwang <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/11/09 16:39:12 by weitwang          #+#    #+#             */
-/*   Updated: 2026/11/10 16:15:12 by weitwang         ###   ########.fr       */
+/*   Updated: 2026/11/15 22:41:40 by weitwang         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,7 @@ void	ft_nodeclear(t_node **node);
 void	assign_index(t_node *stack);
 int		is_sorted(t_node *stack);
 int		stack_size(t_node *stack);
+int		find_max_position(t_node *stack);
 
 /* Parsing */
 int		ft_is_valid_number(char *str);
