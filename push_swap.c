@@ -6,7 +6,7 @@
 /*   By: weitwang <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/28 15:12:11 by weit              #+#    #+#             */
-/*   Updated: 2026/11/15 22:56:34 by weitwang         ###   ########.fr       */
+/*   Updated: 2026/11/15 23:11:57 by weitwang         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ int	main(int argc, char **argv)
 	if (!is_sorted(a))
 	{
 		assign_index(a);
-		medium_sort(&a, &b);
+		sort_stack(&a, &b);
 	}
 	ft_nodeclear(&a);
 	ft_nodeclear(&b);

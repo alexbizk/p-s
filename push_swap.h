@@ -6,7 +6,7 @@
 /*   By: weitwang <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/11/09 16:39:12 by weitwang          #+#    #+#             */
-/*   Updated: 2026/11/15 22:57:34 by weitwang         ###   ########.fr       */
+/*   Updated: 2026/11/15 23:17:49 by weitwang         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,5 +74,6 @@ void	sort_stack(t_node **a);
 void	simple_sort(t_node **a, t_node **b);
 void	radix_sort(t_node **a, t_node **b);
 void	medium_sort(t_node **a, t_node **b);
+void	adaptive_sort(t_node **a, t_node **b);
 
 #endif
