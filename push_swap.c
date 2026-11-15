@@ -6,12 +6,34 @@
 /*   By: weitwang <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/28 15:12:11 by weit              #+#    #+#             */
-/*   Updated: 2026/11/09 16:39:21 by weitwang         ###   ########.fr       */
+/*   Updated: 2026/11/15 22:56:34 by weitwang         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "push_swap.h"
 
+int	main(int argc, char **argv)
+{
+	t_node	*a;
+	t_node	*b;
+
+	if (argc < 2)
+		return (0);
+	a = parse_args(argc, argv);
+	if (!a)
+		return (1);
+	b = NULL;
+	if (!is_sorted(a))
+	{
+		assign_index(a);
+		medium_sort(&a, &b);
+	}
+	ft_nodeclear(&a);
+	ft_nodeclear(&b);
+	return (0);
+}
+
+/*
 int	push_swap(int argc, char **argv)
 {
 	t_node	*a;
@@ -48,6 +70,7 @@ int	push_swap(int argc, char **argv)
 	ft_nodeclear(&a);
 	return (0);
 }
+*/
 
 /*
 #include "push_swap.h"
