@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parse_args.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: weit <weit@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: weitwang <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/28 14:43:28 by weit              #+#    #+#             */
-/*   Updated: 2026/10/28 14:44:31 by weit             ###   ########.fr       */
+/*   Updated: 2026/11/16 19:27:04 by weitwang         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,7 +78,7 @@ t_node	*parse_args(int argc, char **argv)
 	i = 1;
 	while (i < argc)
 	{
-		if (!add_argument(&a, argv[i]))
+		if (!is_flag(argv[i]) && !add_argument(&a, argv[i]))
 		{
 			ft_nodeclear(&a);
 			ft_putendl_fd("Error", 2);

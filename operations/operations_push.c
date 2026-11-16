@@ -6,7 +6,7 @@
 /*   By: weitwang <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/11/08 23:53:18 by weitwang          #+#    #+#             */
-/*   Updated: 2026/11/09 00:00:07 by weitwang         ###   ########.fr       */
+/*   Updated: 2026/11/16 18:57:22 by weitwang         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ void	pa(t_node **a, t_node **b)
 	if (!a || !b || !*b)
 		return ;
 	push_node(b, a);
-	ft_putendl_fd("pa", 1);
+	put_op("pa", OP_PA);
 }
 
 void	pb(t_node **a, t_node **b)
@@ -25,5 +25,5 @@ void	pb(t_node **a, t_node **b)
 	if (!a || !b || !*a)
 		return ;
 	push_node(a, b);
-	ft_putendl_fd("pb", 1);
+	put_op("pb", OP_PB);
 }

@@ -6,7 +6,7 @@
 /*   By: weitwang <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/11/09 16:39:12 by weitwang          #+#    #+#             */
-/*   Updated: 2026/11/15 23:17:49 by weitwang         ###   ########.fr       */
+/*   Updated: 2026/11/16 19:53:19 by weitwang         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,22 @@
 # include <limits.h>
 # include <stdlib.h>
 # include <unistd.h>
+
+# define OP_SA 0
+# define OP_SB 1
+# define OP_SS 2
+# define OP_PA 3
+# define OP_PB 4
+# define OP_RA 5
+# define OP_RB 6
+# define OP_RR 7
+# define OP_RRA 8
+# define OP_RRB 9
+# define OP_RRR 10
+# define STRAT_ADAPTIVE 0
+# define STRAT_SIMPLE 1
+# define STRAT_MEDIUM 2
+# define STRAT_COMPLEX 3
 
 typedef struct s_node
 {
@@ -35,14 +51,16 @@ void	ft_nodeclear(t_node **node);
 void	assign_index(t_node *stack);
 int		is_sorted(t_node *stack);
 int		stack_size(t_node *stack);
+int		find_min_position(t_node *stack);
 int		find_max_position(t_node *stack);
 
 /* Parsing */
 int		ft_is_valid_number(char *str);
 int		ft_has_duplicate(t_node *a, int value);
-void	free_stack(t_node **stack);
-void	error_exit(t_node **stack);
 t_node	*parse_args(int argc, char **argv);
+int	is_flag(char *arg);
+int	parse_flag(char *arg, int *strategy, int *bench);
+int	parse_multi_flags(char **argv, int *strategy, int *bench);
 
 /* Operation helpers */
 void	swap_nodes(t_node **stack);
@@ -69,8 +87,13 @@ void	rra(t_node **a);
 void	rrb(t_node **b);
 void	rrr(t_node **a, t_node **b);
 
+/* Operation counter */
+int		*op_counter(void);
+void	put_op(char *name, int id);
+int		total_ops(void);
+
 /* Sorting */
-void	sort_stack(t_node **a);
+void	sort_stack(t_node **a, t_node **b, int strategy);
 void	simple_sort(t_node **a, t_node **b);
 void	radix_sort(t_node **a, t_node **b);
 void	medium_sort(t_node **a, t_node **b);

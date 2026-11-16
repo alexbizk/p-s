@@ -6,6 +6,13 @@
 /*   By: weitwang <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/11/15 23:15:12 by weitwang          #+#    #+#             */
-/*   Updated: 2026/11/15 23:15:13 by weitwang         ###   ########.fr       */
+/*   Updated: 2026/11/16 19:54:10 by weitwang         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
+#include "push_swap.h"
+
+void	adaptive_sort(t_node **a, t_node **b)
+{
+	radix_sort(a, b);
+}

@@ -10,19 +10,28 @@ SRCS = push_swap.c \
        parsing/ft_has_duplicate.c \
        parsing/ft_is_valid_number.c \
        parsing/parse_args.c \
+       parsing/is_flag.c \
+       parsing/parse_flag.c \
+       parsing/parse_multi_flags.c \
        stack/ft_nodeadd_back.c \
        stack/ft_nodeclear.c \
        stack/ft_nodenew.c \
        stack/ft_print_stack.c \
        stack/stack_utils.c \
+       stack/find_min_position.c \
+       stack/find_max_position.c \
        operations/operations_helpers.c \
        operations/operations_push.c \
        operations/operations_reverse.c \
        operations/operations_rotate.c \
        operations/operations_swap.c \
+       operations/op_counter.c \
+       operations/put_op.c \
+       operations/total_ops.c \
        sorting/simple_sort.c \
        sorting/medium_sort.c \
        sorting/radix_sort.c \
+       sorting/sort_stack.c\
        sorting/adaptive_sort.c
 
 OBJS = $(SRCS:.c=.o)
