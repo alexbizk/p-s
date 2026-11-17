@@ -6,7 +6,7 @@
 /*   By: weitwang <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/11/09 16:39:12 by weitwang          #+#    #+#             */
-/*   Updated: 2026/11/16 19:53:19 by weitwang         ###   ########.fr       */
+/*   Updated: 2026/11/17 02:01:51 by weitwang         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,7 @@ typedef struct s_node
 	struct s_node	*next;
 }					t_node;
 
-/* Linked list */
+/* stack - Linked list */
 t_node	*ft_nodenew(int value);
 void	ft_nodeadd_back(t_node **node, t_node *new);
 void	ft_print_stack(t_node *node);
@@ -62,7 +62,7 @@ int	is_flag(char *arg);
 int	parse_flag(char *arg, int *strategy, int *bench);
 int	parse_multi_flags(char **argv, int *strategy, int *bench);
 
-/* Operation helpers */
+/* Operation - Operation helpers */
 void	swap_nodes(t_node **stack);
 void	push_node(t_node **src, t_node **dst);
 void	rotate_nodes(t_node **stack);
@@ -87,7 +87,7 @@ void	rra(t_node **a);
 void	rrb(t_node **b);
 void	rrr(t_node **a, t_node **b);
 
-/* Operation counter */
+/* Operation - Operation counter */
 int		*op_counter(void);
 void	put_op(char *name, int id);
 int		total_ops(void);
@@ -98,5 +98,10 @@ void	simple_sort(t_node **a, t_node **b);
 void	radix_sort(t_node **a, t_node **b);
 void	medium_sort(t_node **a, t_node **b);
 void	adaptive_sort(t_node **a, t_node **b);
+int		adaptive_choice(double disorder);
+double	compute_disorder(t_node *stack);
+
+/* Bench */
+void	print_bench(double disorder, int strategy);
 
 #endif

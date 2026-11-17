@@ -32,7 +32,9 @@ SRCS = push_swap.c \
        sorting/medium_sort.c \
        sorting/radix_sort.c \
        sorting/sort_stack.c\
-       sorting/adaptive_sort.c
+       sorting/adaptive_sort.c\
+       sorting/compute_disorder.c\
+       bench/print_bench.c
 
 OBJS = $(SRCS:.c=.o)
 
