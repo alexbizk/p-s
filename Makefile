@@ -28,6 +28,8 @@ SRCS = push_swap.c \
        operations/op_counter.c \
        operations/put_op.c \
        operations/total_ops.c \
+       sorting/sort_three.c \
+       sorting/sort_small.c \
        sorting/simple_sort.c \
        sorting/medium_sort.c \
        sorting/radix_sort.c \

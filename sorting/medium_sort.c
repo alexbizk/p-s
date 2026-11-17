@@ -6,7 +6,7 @@
 /*   By: weitwang <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/11/15 22:44:25 by weitwang          #+#    #+#             */
-/*   Updated: 2026/11/15 23:16:56 by weitwang         ###   ########.fr       */
+/*   Updated: 2026/11/17 16:23:15 by weitwang         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,26 +82,16 @@ void	medium_sort(t_node **a, t_node **b)
 	int	chunk_start;
 	int	chunk_end;
 
-/* 1. 计算 chunk_size */
 	node_count = stack_size(*a);
-/* 2. 按照 Chunk 将 A 的节点推入 B */
 	chunk_size = get_chunk_size(node_count);
 	chunk_start = 0;
 	while (chunk_start < node_count)
 	{
 		chunk_end = chunk_start + chunk_size - 1;
-		if (chunk_end >= node_count)/*它保证 chunk_end 不会超出最大的 index。*/
+		if (chunk_end >= node_count)
 			chunk_end = node_count - 1;
 		push_chunk_to_b(a, b, chunk_start, chunk_end);
-		chunk_start += chunk_size;//是移动到下一个 Chunk。
+		chunk_start += chunk_size;
 	}
-/* 3. 按照 index 从大到小将 B 推回 A */
-	 push_back_to_a(a, b);
+	push_back_to_a(a, b);
 }
-
-/*
-既然最终都要把 A 中的所有节点推到 B，为什么还要分 Chunk？
-
-答案是：不分 Chunk 也完全可以完成排序。Chunk 的主要作用是减少操作次数，而不是保证排序正确。
-
-*/

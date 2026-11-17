@@ -6,7 +6,7 @@
 /*   By: weitwang <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/11/16 17:43:46 by weitwang          #+#    #+#             */
-/*   Updated: 2026/11/16 18:14:00 by weitwang         ###   ########.fr       */
+/*   Updated: 2026/11/17 16:20:04 by weitwang         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,9 @@
 
 int	ft_is_valid_number(char *str)
 {
-	int	i;
+	int		i;
 	long	n;
-	int	sign;
+	int		sign;
 
 	if (!str || !*str)
 		return (0);
@@ -26,7 +26,7 @@ int	ft_is_valid_number(char *str)
 		sign = -1;
 	if (str[i] == '-' || str[i] == '+')
 		i++;
-	if (!str[i]) // 所以在跳过符号以后，要确认后面至少还有一个数字：
+	if (!str[i])
 		return (0);
 	n = 0;
 	while (str[i])

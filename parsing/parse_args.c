@@ -6,7 +6,7 @@
 /*   By: weitwang <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/28 14:43:28 by weit              #+#    #+#             */
-/*   Updated: 2026/11/16 19:27:04 by weitwang         ###   ########.fr       */
+/*   Updated: 2026/11/17 16:08:13 by weitwang         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,8 +71,8 @@ static int	add_argument(t_node **a, char *arg)
 
 t_node	*parse_args(int argc, char **argv)
 {
-	t_node *a;
-	int i;
+	t_node	*a;
+	int		i;
 
 	a = NULL;
 	i = 1;

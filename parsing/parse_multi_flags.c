@@ -6,7 +6,7 @@
 /*   By: weitwang <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/11/16 19:35:03 by weitwang          #+#    #+#             */
-/*   Updated: 2026/11/16 19:43:56 by weitwang         ###   ########.fr       */
+/*   Updated: 2026/11/17 16:21:02 by weitwang         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,14 +16,14 @@ int	parse_multi_flags(char **argv, int *strategy, int *bench)
 {
 	int	i;
 
-	*strategy = STRAT_ADAPTIVE;//默认使用自适应算法，因为题目规定不写选项时用 --adaptive
-	*bench = 0;//默认不开 bench
+	*strategy = STRAT_ADAPTIVE;
+	*bench = 0;
 	i = 1;
 	while (argv[i])
 	{
-		if (is_flag(argv[i]))//是 "--bench"，不是 NULL → 进入循环
+		if (is_flag(argv[i]))
 		{
-			if (!parse_flag(argv[i], strategy, bench))//是选项吗？是 → 交给 parse_flag
+			if (!parse_flag(argv[i], strategy, bench))
 				return (0);
 		}
 		i++;

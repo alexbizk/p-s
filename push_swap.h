@@ -6,7 +6,7 @@
 /*   By: weitwang <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/11/09 16:39:12 by weitwang          #+#    #+#             */
-/*   Updated: 2026/11/17 02:01:51 by weitwang         ###   ########.fr       */
+/*   Updated: 2026/11/17 16:12:06 by weitwang         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,9 +58,9 @@ int		find_max_position(t_node *stack);
 int		ft_is_valid_number(char *str);
 int		ft_has_duplicate(t_node *a, int value);
 t_node	*parse_args(int argc, char **argv);
-int	is_flag(char *arg);
-int	parse_flag(char *arg, int *strategy, int *bench);
-int	parse_multi_flags(char **argv, int *strategy, int *bench);
+int		is_flag(char *arg);
+int		parse_flag(char *arg, int *strategy, int *bench);
+int		parse_multi_flags(char **argv, int *strategy, int *bench);
 
 /* Operation - Operation helpers */
 void	swap_nodes(t_node **stack);
@@ -93,6 +93,8 @@ void	put_op(char *name, int id);
 int		total_ops(void);
 
 /* Sorting */
+void	sort_three(t_node **a);
+void	sort_small(t_node **a, t_node **b);
 void	sort_stack(t_node **a, t_node **b, int strategy);
 void	simple_sort(t_node **a, t_node **b);
 void	radix_sort(t_node **a, t_node **b);

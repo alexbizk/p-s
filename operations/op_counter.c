@@ -6,7 +6,7 @@
 /*   By: weitwang <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/11/16 18:54:13 by weitwang          #+#    #+#             */
-/*   Updated: 2026/11/16 19:05:48 by weitwang         ###   ########.fr       */
+/*   Updated: 2026/11/17 16:19:33 by weitwang         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 int	*op_counter(void)
 {
-	static int	count[11];//static 的数组，所有格子一开始都会自动是 0
+	static int	count[11];
 
 	return (count);
 }

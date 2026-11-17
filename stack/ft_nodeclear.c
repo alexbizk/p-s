@@ -6,7 +6,7 @@
 /*   By: weitwang <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/11/08 23:48:12 by weitwang          #+#    #+#             */
-/*   Updated: 2026/11/10 16:12:15 by weitwang         ###   ########.fr       */
+/*   Updated: 2026/11/17 16:24:52 by weitwang         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,15 +18,10 @@ void	ft_nodeclear(t_node **node)
 
 	if (!node)
 		return ;
-	while (*node) /*只要当前还有 node，就继续循环。*/
+	while (*node)
 	{
-		suit = (*node)->next;// 这行代码只是让 suit 记住第二个 node 的地址。
-		free(*node);//    释放当前 node。
+		suit = (*node)->next;
+		free(*node);
 		*node = suit;
 	}
 }
-
-/*
-那为什么 ft_nodeclear() 要使用 t_node **node？
-因为我们不仅想读取链表，还想修改外面的变量 a。
-*/

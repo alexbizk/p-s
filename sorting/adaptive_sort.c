@@ -6,7 +6,7 @@
 /*   By: weitwang <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/11/15 23:15:12 by weitwang          #+#    #+#             */
-/*   Updated: 2026/11/17 01:48:10 by weitwang         ###   ########.fr       */
+/*   Updated: 2026/11/17 16:05:27 by weitwang         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,11 @@ void	adaptive_sort(t_node **a, t_node **b)
 {
 	int	choice;
 
+	if (stack_size(*a) <= 5)
+	{
+		sort_small(a, b);
+		return ;
+	}
 	choice = adaptive_choice(compute_disorder(*a));
 	if (choice == STRAT_SIMPLE)
 		simple_sort(a, b);

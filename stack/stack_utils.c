@@ -6,7 +6,7 @@
 /*   By: weitwang <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/11/09 16:35:24 by weitwang          #+#    #+#             */
-/*   Updated: 2026/11/17 01:36:03 by weitwang         ###   ########.fr       */
+/*   Updated: 2026/11/17 16:24:07 by weitwang         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,21 +14,21 @@
 
 void	assign_index(t_node *stack)
 {
-	t_node	*current;//指向当前需要计算排名的 node。我现在正在计算哪个数字的排名？
-	t_node	*compare;//遍历整个 Stack，寻找比 current 更小的数字。
+	t_node	*current;
+	t_node	*compare;
 
 	current = stack;
 	while (current)
 	{
 		current->index = 0;
-		compare = stack;///重制
+		compare = stack;
 		while (compare)
 		{
-			if (compare->value < current->value)//内层循环的目的只有一个：找出 Stack A 中有多少个数字比 current 小。把所有数字拿来和它比较。
+			if (compare->value < current->value)
 				current->index++;
-			compare = compare->next;//每比较一个 node 就移动
+			compare = compare->next;
 		}
-		current = current->next;//内层循环全部结束后移动
+		current = current->next;
 	}
 }
 
