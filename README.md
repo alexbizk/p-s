@@ -212,6 +212,8 @@ The largest index is 3, which needs 2 bits, so there are 2 passes:
 
 **Cost.** Each pass costs at most 2n moves, and there are ⌈log₂ n⌉ passes (7 for 100 numbers, 9 for 500) → O(n log n). Unlike the other two, its cost **does not depend on the order** of the input: 1084 moves for any 100 numbers, 6784 for any 500. That is why it wins on very shuffled input and wastes moves on almost-sorted input.
 
+[Interactive Radix Sort Visualizer](https://alexbizk.github.io/p-s/)
+
 ### 4. Adaptive
 
 **Idea.** Look before you sort. The adaptive strategy does not sort by itself; it measures the input and hands it to the algorithm that should be cheapest:
