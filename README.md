@@ -1,16 +1,10 @@
-*This project has been created as part of the 42 curriculum by weitwang, &lt;login2&gt;.*
+*This project has been created as part of the 42 curriculum by weitwang & furbozor.*
 
 # push_swap
 
-[English](#english) | [中文](#中文)
+## Description
 
----
-
-## English
-
-### Description
-
-`push_swap` is a sorting program with a twist: the numbers live on a **stack `a`**, there is a second empty **stack `b`**, and the only way to move them is a fixed set of 11 operations. The program does not print the sorted numbers. It prints the **list of operations** that sorts stack `a` in ascending order (smallest on top), and the goal is to use as few operations as possible.
+`push_swap` sorts integers using two stacks and a fixed set of 11 operations. The numbers start on **stack `a`**; **stack `b`** starts empty. The program does not print the sorted numbers: it prints the **list of operations** that sorts `a` in ascending order (smallest on top) with `b` empty, using as few operations as possible.
 
 | Operation | Effect |
 |---|---|
@@ -19,11 +13,15 @@
 | `ra` / `rb` / `rr` | rotate up: the first element becomes the last (`a` / `b` / both) |
 | `rra` / `rrb` / `rrr` | rotate down: the last element becomes the first (`a` / `b` / both) |
 
-This version of the project asks for **four strategies** in one binary (simple, medium, complex and adaptive), a **disorder** metric, and a `--bench` mode that reports statistics.
+This version of the subject asks for:
 
-### Instructions
+- **four strategies** in one binary: simple, medium, complex and adaptive;
+- a **disorder** metric, measured before any move;
+- a `--bench` mode that reports statistics after sorting.
 
-**Compile**
+## Instructions
+
+### Compile
 
 ```sh
 make        # builds libft and push_swap
@@ -32,69 +30,206 @@ make fclean # removes object files and the binary
 make re     # fclean + all
 ```
 
-**Run**
+### Run
 
 ```sh
 ./push_swap 3 2 1                  # default strategy: --adaptive
 ./push_swap "3 2 1"                # numbers in one string also work
 ./push_swap --simple 5 4 3 2 1     # force a strategy
-./push_swap --medium  ...
+./push_swap --medium ...
 ./push_swap --complex ...
 ./push_swap --adaptive ...
 ./push_swap --bench 4 67 3 87 23   # print statistics to stderr after sorting
 ```
 
-Options can be placed anywhere among the numbers. Operations are printed on **stdout**, one per line. The `--bench` report is printed on **stderr**, so it never mixes with the operations:
+Options can be placed anywhere among the numbers.
+
+### Output
+
+Operations are printed on **stdout**, one per line. The `--bench` report is printed on **stderr** after sorting, so it never mixes with the operations:
 
 ```sh
-ARG="4 67 3 87 23"; ./push_swap --bench $ARG 2> bench.txt | ./checker_linux $ARG
+ARG="4 67 3 87 23"; ./push_swap $ARG | ./checker_linux $ARG         # OK
+./push_swap --bench $ARG 2> bench.txt | ./checker_linux $ARG        # OK, report in bench.txt
 ```
 
+Example report for 100 random numbers:
+
 ```
-[bench] disorder:  40.00%
+[bench] disorder:  47.78%
 [bench] strategy:  Adaptive / O(n*sqrt(n))
-[bench] total_ops:  13
-[bench] sa:  0  sb:  0  ss:  0  pa:  5  pb:  5
-[bench] ra:  2  rb:  1  rr:  0  rra:  0  rrb:  0  rrr:  0
+[bench] total_ops:  790
+[bench] sa:  0  sb:  0  ss:  0  pa:  100  pb:  100
+[bench] ra:  400  rb:  93  rr:  0  rra:  0  rrb:  97  rrr:  0
 ```
 
-**Errors.** `Error` followed by `\n` is written to stderr when an argument is not an integer, is outside the `int` range, is duplicated, or is an unknown option (for example `--foo`). With no arguments the program prints nothing.
+### Errors
 
-### Algorithms
+`Error` followed by `\n` is written to stderr when an argument:
 
-Before sorting, every number receives an **index**: its rank among all numbers (0 = smallest, n-1 = largest). All algorithms work on these indexes instead of the raw values, so negative or very large numbers need no special handling.
+- is not an integer (`abc`, `1a`, `""`, `-`);
+- is outside the `int` range (`2147483648`);
+- is a duplicate (`1 2 2`);
+- is an unknown option (`--foo`).
 
-#### Disorder
+With no arguments the program prints nothing.
 
-The disorder is the fraction of pairs `(i, j)` with `i` before `j` where the value of `i` is greater than the value of `j` (the number of inversions divided by `n(n-1)/2`). It is 0 for a sorted stack and 1 for a reversed one. It is computed **before any operation**, with two nested loops (O(n²) time, but it outputs no operations).
+## Algorithms
 
-#### 1. Simple: selection sort, O(n²)
+All strategies share the same basic move: **take numbers out of `a` into `b` in a smart order, then bring them back so that `a` ends up sorted**. The algorithms differ in *which* number they take next, and that choice decides how many rotations they need.
 
-Repeat until `a` is empty: find the smallest element, bring it to the top with `ra` or `rra` (whichever direction is shorter), then `pb`. Finally `pa` everything back. Each element can need up to n/2 rotations, so the number of operations is O(n²).
+### Step 0: replace values by their rank (index)
 
-#### 2. Medium: chunk sort, O(n√n)
+Before sorting, every number gets an **index**: its rank among all the numbers (0 = smallest, n-1 = largest).
 
-The indexes are split into about √n chunks of size √n (`0..k-1`, `k..2k-1`, ...). Chunks are pushed to `b` in increasing order: rotate `a` until an element of the current chunk is on top, then `pb`. Each chunk needs at most one pass over `a` (≤ n operations), and there are √n chunks, so this phase is O(n√n). Then the largest index is brought to the top of `b` with `rb`/`rrb` and pushed back with `pa`, repeatedly. Because the largest chunk was pushed last, the maximum is always near the top of `b` (within about √n positions), so this phase is also O(n√n).
+| value | 42 | -7 | 1000 | 3 |
+|---|---|---|---|---|
+| **index** | 2 | 0 | 3 | 1 |
 
-#### 3. Complex: LSD radix sort, O(n log n)
+After this step, n numbers are always exactly `0 … n-1`, whatever the user typed (negative, huge, far apart). Every algorithm below works on indexes only. This makes "the smallest 23 numbers" simply "indexes 0 to 22", and it lets radix sort use only 9 bits for 500 numbers.
 
-Indexes are read in binary, starting from the lowest bit. For each bit, every element of `a` is visited once: bit 0 → `pb`, bit 1 → `ra`. Then everything in `b` is pushed back with `pa`. Each pass costs at most 2n operations and there are ⌈log₂ n⌉ passes (9 for 500 numbers), so the total is O(n log n).
+### Disorder: how shuffled is the input?
 
-#### 4. Adaptive
+Look at every pair of numbers (one on the left, one on the right). If the left one is bigger, the pair is a **mistake**. The disorder is:
 
-The adaptive strategy computes the disorder and picks one of the three algorithms:
+```
+disorder = mistakes / total pairs        (total pairs = n(n-1)/2)
+```
+
+| Stack (top first) | Pairs | Mistakes | Disorder |
+|---|---|---|---|
+| `1 2 3` | 3 | 0 | 0.00 (sorted) |
+| `2 1 3` | 3 | 1 (2 before 1) | 0.33 |
+| `3 2 1` | 3 | 3 | 1.00 (reversed) |
+| `4 67 3 87 23` | 10 | 4 | 0.40 |
+
+It is computed **before any operation** with two nested loops (O(n²) comparisons, no operations printed). Only the adaptive strategy uses it to decide; `--bench` prints it.
+
+### Small inputs: 2 to 5 numbers
+
+**Three numbers** need at most 2 moves. Two rules are enough:
+
+1. Send the **largest** to the bottom: on top → `ra`, in the middle → `rra`, already at the bottom → nothing.
+2. If the top two are in the wrong order → `sa`.
+
+| Start | Moves |
+|---|---|
+| `1 2 3` | none |
+| `2 1 3` | `sa` |
+| `3 1 2` | `ra` |
+| `2 3 1` | `rra` |
+| `3 2 1` | `ra sa` |
+| `1 3 2` | `rra sa` |
+
+**Four or five numbers** are reduced to three: push the smallest one (or two) to `b`, sort the three left in `a`, then `pa` them back. Example `5 1 4 2 3` (8 moves):
+
+| Move | a (top → bottom) | b | Why |
+|---|---|---|---|
+| | `5 1 4 2 3` | | |
+| `ra` | `1 4 2 3 5` | | smallest (1) is now on top |
+| `pb` | `4 2 3 5` | `1` | park it in b |
+| `ra` | `2 3 5 4` | `1` | next smallest (2) on top |
+| `pb` | `3 5 4` | `2 1` | park it |
+| `rra` | `4 3 5` | `2 1` | three left: largest (5) to the bottom |
+| `sa` | `3 4 5` | `2 1` | top two were reversed |
+| `pa` | `2 3 4 5` | `1` | bring back 2 |
+| `pa` | `1 2 3 4 5` | | bring back 1: sorted |
+
+All 120 orders of 5 numbers were tested: at most 10 moves. These small sorts are used by the adaptive strategy; a forced strategy (`--simple`, …) always uses its own algorithm.
+
+### 1. Simple: selection sort, O(n²)
+
+**Idea.** Like picking the shortest person out of a line, again and again: find the smallest number, bring it to the top, put it aside in `b`. When `a` is empty, `b` holds everything with the largest on top, so pushing it all back rebuilds `a` in order.
+
+1. Find the smallest element of `a`.
+2. Bring it to the top with `ra` (if it is in the top half) or `rra` (bottom half): the shorter way.
+3. `pb` it. Repeat until `a` is empty.
+4. `pa` everything back.
+
+Example `./push_swap --simple 2 4 1 3` (12 moves):
+
+| Moves | a (top → bottom) | b |
+|---|---|---|
+| | `2 4 1 3` | |
+| `ra ra` | `1 3 2 4` | |
+| `pb` | `3 2 4` | `1` |
+| `ra pb` | `4 3` | `2 1` |
+| `ra pb` | `4` | `3 2 1` |
+| `pb` | | `4 3 2 1` |
+| `pa pa pa pa` | `1 2 3 4` | |
+
+**Cost.** For each of the n numbers, reaching the minimum can take up to n/2 rotations: about n × n/2 moves, so O(n²). Measured: about 1500 moves for 100 random numbers, about 32 000 for 500 (5 times more numbers, about 20 times more moves).
+
+**When it is the best.** When the input is almost sorted, the minimum is usually already near the top, so each step costs almost nothing.
+
+### 2. Medium: chunk sort, O(n√n)
+
+**Idea.** Searching `a` for one exact number is slow. Searching for *any* number of a group is fast, because one of them is usually close. So we split the indexes into groups (chunks) of size k ≈ √n, move the groups to `b` one by one, then bring the numbers back largest first.
+
+Chunk size = the smallest k with k × k ≥ n: 10 for 100 numbers, 23 for 500.
+
+**Phase 1: push the chunks to `b`, smallest chunk first.** Look at the top of `a`: if it belongs to the current chunk, `pb`; otherwise `ra` and look at the next one. When the chunk is complete, move on to the next chunk.
+
+**Phase 2: bring back the largest each time.** Find the largest index in `b`, bring it to the top with `rb` or `rrb` (the shorter way), `pa`. Repeat until `b` is empty.
+
+Example `./push_swap --medium 8 3 6 0 7 1 5 2 4` (9 numbers, so k = 3, chunks `0–2`, `3–5`, `6–8`; 32 moves):
+
+| After | a (top → bottom) | b (top → bottom) |
+|---|---|---|
+| start | `8 3 6 0 7 1 5 2 4` | |
+| chunk `0–2` pushed | `4 8 3 6 7 5` | `2 1 0` |
+| chunk `3–5` pushed | `8 6 7` | `5 3 4 2 1 0` |
+| chunk `6–8` pushed | | `7 6 8 5 3 4 2 1 0` |
+| phase 2 done | `0 1 2 3 4 5 6 7 8` | |
+
+After phase 1, `b` is not sorted, but it is **sorted by groups**: the largest group sits on top. So in phase 2 the current maximum is always within the top few positions, never deep down.
+
+**Cost.** Phase 1: one chunk needs at most one full turn of `a` (≤ n moves), and there are √n chunks → at most n√n. Phase 2: each of the n numbers needs at most about √n rotations → n√n. Total O(n√n). Measured: about 800 moves for 100 random numbers (our best strategy for 100), about 8100 for 500.
+
+### 3. Complex: LSD radix sort, O(n log n)
+
+**Idea.** Write every index in binary and sort by **one bit at a time**, starting with the lowest bit. For each bit, numbers whose bit is 0 go to `b` (`pb`), numbers whose bit is 1 stay in `a` (`ra`), then `b` comes back on top (`pa`). After the last bit, `a` is sorted.
+
+For one pass:
+
+1. Look at each element of `a` exactly once: bit = 0 → `pb`, bit = 1 → `ra`.
+2. `pa` everything from `b`.
+
+Example `./push_swap --complex 5 2 9 1` (12 moves). The indexes are 5→2, 2→1, 9→3, 1→0, so `a` = `2 1 3 0`:
+
+| Index | 2 | 1 | 3 | 0 |
+|---|---|---|---|---|
+| Binary | `10` | `01` | `11` | `00` |
+
+The largest index is 3, which needs 2 bits, so there are 2 passes:
+
+| Pass | Bit of each element (in order) | Moves | a after the pass |
+|---|---|---|---|
+| bit 0 | 2→0, 1→1, 3→1, 0→0 | `pb ra ra pb pa pa` | `2 0 1 3` (bit 0 now reads 0 0 1 1) |
+| bit 1 | 2→1, 0→0, 1→0, 3→1 | `ra pb pb ra pa pa` | `0 1 2 3` sorted |
+
+**Why it works.** In each pass, numbers with the same bit keep their relative order (`pb` reverses them, `pa` reverses them back). So after sorting by bit 0, then by bit 1, and so on, the order by all bits together is correct.
+
+**Cost.** Each pass costs at most 2n moves, and there are ⌈log₂ n⌉ passes (7 for 100 numbers, 9 for 500) → O(n log n). Unlike the other two, its cost **does not depend on the order** of the input: 1084 moves for any 100 numbers, 6784 for any 500. That is why it wins on very shuffled input and wastes moves on almost-sorted input.
+
+### 4. Adaptive
+
+**Idea.** Look before you sort. The adaptive strategy does not sort by itself; it measures the input and hands it to the algorithm that should be cheapest:
+
+1. 5 numbers or fewer → small sort.
+2. Otherwise compute the disorder, then:
 
 | Disorder | Algorithm | Reason |
 |---|---|---|
-| < 0.2 | simple | most elements are already close to their place, so only a few need to be moved |
-| 0.2 – 0.5 | medium | balanced cost for partially shuffled input |
-| ≥ 0.5 | complex | radix sort costs the same whatever the order, which wins on highly shuffled input |
+| < 0.2 | simple | most numbers are near their place, so the minimum is always close to the top |
+| 0.2 – 0.5 | medium | balanced cost for partly shuffled input |
+| ≥ 0.5 | complex | radix costs the same whatever the order, so it wins when the input is very messy |
 
-The choice is made in a single function (`adaptive_choice`) that is also used by `--bench`, so the thresholds only exist in one place.
+The thresholds live in a single function, `adaptive_choice`, which `--bench` also calls, so they exist in one place only.
 
-Measured results (number of operations, same input for every strategy):
+Measured results (number of moves, same input for every strategy, best in bold):
 
-| n | disorder | simple | medium | complex | adaptive |
+| n | Disorder | simple | medium | complex | adaptive |
 |---|---|---|---|---|---|
 | 100 | 5.8% | **264** | 400 | 1084 | 264 |
 | 100 | 22.1% | 816 | **679** | 1084 | 679 |
@@ -103,155 +238,51 @@ Measured results (number of operations, same input for every strategy):
 | 500 | 5.0% | **4038** | 4648 | 6784 | 4038 |
 | 500 | 13.1% | 10038 | **6246** | 6784 | 10038 |
 
-These measurements also show the limits of the default thresholds: with 500 numbers, simple sort becomes expensive even at about 13% disorder. <!-- TODO: update this paragraph if the thresholds are changed. -->
+The adaptive strategy picks the best algorithm in most cases. The last row shows the limit of the default thresholds: with 500 numbers, simple sort becomes expensive already at about 13% disorder.
 
-#### Complexity summary
+### Complexity summary
 
-| Strategy | Operations (time) | Extra space |
+| Strategy | Moves | Extra memory |
 |---|---|---|
-| simple | O(n²) | O(1) (only the two stacks, O(n) in total) |
+| simple | O(n²) | O(1) |
 | medium | O(n√n) | O(1) |
 | complex | O(n log n) | O(1) |
-| adaptive | the bound of the selected algorithm, plus O(n²) comparisons to compute the disorder (no operations) | O(1) |
+| adaptive | bound of the selected algorithm, plus O(n²) comparisons for the disorder | O(1) |
 
-#### Operation counting without global variables
+Extra memory does not count the two stacks themselves (O(n) nodes in total).
+
+### Counting operations without global variables
 
 The subject forbids global variables. The operation counter is a `static int count[11]` declared **inside** the function `op_counter()`, which returns a pointer to it. Every operation calls `put_op(name, id)`, which prints the operation and increments `count[id]`. The total is the sum of the 11 counters.
 
-### Project structure
+## Project structure
 
 ```
 push_swap.c      main(): parse options, parse numbers, sort, free
 parsing/         number validation, duplicates, option parsing
 stack/           linked list helpers, index assignment, min/max search
 operations/      the 11 operations and the operation counter
-sorting/         simple, medium, radix, adaptive, disorder, dispatcher
+sorting/         small sorts, simple, medium, radix, adaptive, disorder, dispatcher
 bench/           --bench report
 Libft/           our libft
 ```
 
-### Contributions
+## Contributions
 
-<!-- Fill in who did what. -->
 - **weitwang**: ...
-- **&lt;login2&gt;**: ...
+- **furbozor**: ...
 
-### Resources
+## Resources
 
 - The push_swap subject (42)
 - Wikipedia: [Selection sort](https://en.wikipedia.org/wiki/Selection_sort), [Radix sort](https://en.wikipedia.org/wiki/Radix_sort), [Bucket sort](https://en.wikipedia.org/wiki/Bucket_sort), [Inversion (discrete mathematics)](https://en.wikipedia.org/wiki/Inversion_(discrete_mathematics))
 
-**Use of AI.** <!-- Adjust to match what you actually did. --> We used AI as a tutor during the project:
+### Use of AI
+
+We used AI as a tutor during the project:
+
 - to explain the subject, the stack operations, Big-O notation, the disorder metric and the algorithms in plain language;
 - to review our code and find bugs (for example the `long` overflow in number validation, missing files in the Makefile, and Norm issues);
 - to suggest the design of some parts (the static operation counter, option parsing, the `--bench` output, `adaptive_choice`) and to write a first draft of this README.
 
 Every line of code was typed, tested and understood by us, and both of us can explain any part of it.
-
----
-
-## 中文
-
-### 项目简介
-
-`push_swap` 是一个特殊的排序程序：数字放在**栈 `a`** 里，另有一个空的**栈 `b`**，只能用 11 种固定的操作来移动数字。程序不输出排好的数字，而是输出一串**操作指令**，按这些指令执行后，栈 `a` 会变成从小到大（最小的在栈顶）。目标是用尽量少的操作。
-
-| 操作 | 作用 |
-|---|---|
-| `sa` / `sb` / `ss` | 交换 `a` / `b` / 两个栈顶部的两个元素 |
-| `pa` / `pb` | 把 `b` 的栈顶放到 `a` 上 / 反过来 |
-| `ra` / `rb` / `rr` | 向上旋转：第一个元素变成最后一个（`a` / `b` / 两个都转） |
-| `rra` / `rrb` / `rrr` | 向下旋转：最后一个元素变成第一个（`a` / `b` / 两个都转） |
-
-这一版题目要求在同一个程序里实现**四种策略**（简单、中等、复杂、自适应），计算**无序度**，并提供输出统计信息的 `--bench` 模式。
-
-### 使用说明
-
-**编译**
-
-```sh
-make        # 编译 libft 和 push_swap
-make clean  # 删除 .o 文件
-make fclean # 删除 .o 文件和程序
-make re     # fclean 后重新编译
-```
-
-**运行**
-
-```sh
-./push_swap 3 2 1                  # 默认策略：--adaptive
-./push_swap "3 2 1"                # 数字写在一个字符串里也可以
-./push_swap --simple 5 4 3 2 1     # 强制使用某种策略
-./push_swap --bench 4 67 3 87 23   # 排序后向 stderr 输出统计信息
-```
-
-选项可以放在数字之间的任何位置。操作指令输出到 **stdout**，每行一条；`--bench` 的统计信息输出到 **stderr**，不会和操作指令混在一起：
-
-```sh
-ARG="4 67 3 87 23"; ./push_swap --bench $ARG 2> bench.txt | ./checker_linux $ARG
-```
-
-**错误处理**：参数不是整数、超出 `int` 范围、有重复值，或者是不认识的选项（比如 `--foo`）时，向 stderr 输出 `Error` 和换行。没有参数时什么都不输出。
-
-### 算法说明
-
-排序前，每个数字会得到一个 **index**，也就是它在所有数字里的排名（0 = 最小，n-1 = 最大）。所有算法都基于 index，而不是原始数值，所以负数、很大的数都不需要特别处理。
-
-#### 无序度
-
-把所有数两两配对，统计"前面的数比后面的数大"的对数（逆序对），再除以总对数 `n(n-1)/2`。完全排好时为 0，完全倒序时为 1。它在**执行任何操作之前**计算，用两层循环完成（O(n²) 次比较，但不产生任何操作）。
-
-#### 1. 简单算法：选择排序，O(n²)
-
-重复以下步骤直到 `a` 为空：找到最小的元素，用 `ra` 或 `rra`（选较短的方向）把它转到栈顶，然后 `pb`。最后把所有元素 `pa` 回来。每个元素最多需要约 n/2 次旋转，所以操作数是 O(n²)。
-
-#### 2. 中等算法：分块排序，O(n√n)
-
-把 index 分成约 √n 块，每块约 √n 个（`0..k-1`、`k..2k-1`……）。按从小到大的顺序把每一块推到 `b`：旋转 `a`，直到栈顶是当前块的元素，再 `pb`。每一块最多遍历一次 `a`（≤ n 次操作），共 √n 块，所以这一阶段是 O(n√n)。之后反复把 `b` 里最大的 index 用 `rb`/`rrb` 转到栈顶，再 `pa` 回去。因为最大的那一块是最后推进去的，最大值总在 `b` 的顶部附近（约 √n 个位置以内），所以这一阶段也是 O(n√n)。
-
-#### 3. 复杂算法：基数排序（LSD），O(n log n)
-
-把 index 看成二进制，从最低位开始。对每一位，把 `a` 里的每个元素看一遍：这一位是 0 就 `pb`，是 1 就 `ra`，然后把 `b` 里的全部 `pa` 回来。每一轮最多 2n 次操作，共 ⌈log₂ n⌉ 轮（500 个数是 9 轮），所以总共是 O(n log n)。
-
-#### 4. 自适应算法
-
-先计算无序度，再从三种算法中选一种：
-
-| 无序度 | 算法 | 理由 |
-|---|---|---|
-| < 0.2 | 简单 | 大部分元素已经在正确位置附近，只需要移动少数几个 |
-| 0.2 – 0.5 | 中等 | 对中等混乱的数据，代价比较均衡 |
-| ≥ 0.5 | 复杂 | 基数排序的代价与顺序无关，数据很乱时最有优势 |
-
-选择逻辑写在同一个函数 `adaptive_choice` 里，`--bench` 也调用它，所以阈值只出现在一个地方。实测数据见英文部分的表格。数据也显示了默认阈值的局限：500 个数时，即使无序度只有约 13%，简单算法的步数也已经很多。
-
-#### 复杂度总结
-
-| 策略 | 操作数（时间） | 额外空间 |
-|---|---|---|
-| 简单 | O(n²) | O(1)（只用两个栈，总共 O(n)） |
-| 中等 | O(n√n) | O(1) |
-| 复杂 | O(n log n) | O(1) |
-| 自适应 | 所选算法的上界，另加计算无序度的 O(n²) 次比较（不产生操作） | O(1) |
-
-#### 不用全局变量统计操作次数
-
-题目禁止全局变量。操作计数器是一个声明在函数 `op_counter()` **内部**的 `static int count[11]`，函数返回指向它的指针。每个操作都调用 `put_op(name, id)`：打印操作名，并让 `count[id]` 加 1。总步数就是 11 个计数之和。
-
-### 分工
-
-<!-- 填写各自负责的部分。 -->
-- **weitwang**：……
-- **&lt;login2&gt;**：……
-
-### 参考资料
-
-- 42 push_swap 题目
-- Wikipedia：选择排序、基数排序、桶排序、逆序对（链接见英文部分）
-
-**AI 的使用**：<!-- 根据实际情况修改。 --> 我们在项目中把AI当作辅导工具：
-- 用通俗的方式解释题目、栈操作、大 O 表示法、无序度和各种算法；
-- 检查代码、找出 bug（例如数字校验里的 `long` 溢出、Makefile 漏掉的文件、Norm 问题）；
-- 对部分设计提出建议（static 计数器、选项解析、`--bench` 输出、`adaptive_choice`），并写出本 README 的初稿。
-
-所有代码都由我们亲手输入、测试并理解，两个人都能解释其中任何一部分。

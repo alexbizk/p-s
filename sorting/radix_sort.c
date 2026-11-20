@@ -6,7 +6,7 @@
 /*   By: weitwang <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/11/08 23:46:24 by weitwang          #+#    #+#             */
-/*   Updated: 2026/11/09 16:36:30 by weitwang         ###   ########.fr       */
+/*   Updated: 2026/11/20 01:19:59 by weitwang         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,14 +60,3 @@ void	radix_sort(t_node **a, t_node **b)
 		bit_position++;
 	}
 }
-/*
-建议按照以下顺序：
-
-1. stack_size.c
-2. radix_sort.c（包含 get_max_bits()、sort_by_bit() 和 radix_sort()）
-3. sort_three.c
-4. sort_five.c
-5. sort_stack.c
-6. 修改 main.c
-7. 编写 Makefile
-8. 编译、测试、运行 Norminette*/
