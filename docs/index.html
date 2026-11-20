@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Push Swap · Radix Sort Visualizer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--accent:#7997b5;--bg:#f6f7f9;--ink:#273347;--muted:#738094;--border:#e3e8ef;--panel:#fff}
+*{box-sizing:border-box}
+body{max-width:930px;margin:24px auto;padding:0 16px;background:var(--bg);color:var(--ink);font:13px/1.5 Montserrat,Arial,sans-serif}
+header{margin-bottom:14px}h1{font-size:25px;letter-spacing:-.8px;margin:3px 0}h2{font-size:13px;margin:0 0 10px}p{margin:7px 0;color:var(--muted)}
+.eyebrow,.label{font-size:10px;letter-spacing:.7px;font-weight:700;color:var(--muted)}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:15px;margin-bottom:11px}
+.row{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.row.between{justify-content:space-between}
+input[type=text]{flex:1;min-width:175px;border:1px solid var(--border);border-radius:9px;padding:11px 12px;font:inherit;background:#fff;color:var(--ink)}
+button{border:1px solid var(--border);background:#fff;color:var(--ink);border-radius:9px;padding:11px 14px;min-height:40px;font:600 12px Montserrat,Arial,sans-serif;cursor:pointer}
+button.primary{background:var(--accent);border-color:var(--accent);color:white}button:hover:not(:disabled){filter:brightness(.96)}button:disabled{opacity:.38;cursor:not-allowed}button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.metric{border-radius:9px;background:#f4f6f8;padding:10px}.metric strong{display:block;font-size:20px;margin-top:3px;font-weight:700}.metric strong.accent{color:var(--accent)}
+.passbar{display:flex;gap:5px;margin:11px 0 5px}.pass{min-width:0;flex:1;background:#eef1f5;border-radius:6px;text-align:center;padding:6px 1px;font-size:10px;font-weight:600;color:var(--muted)}.pass.current{background:var(--accent);color:white}.pass.done{background:#dde7e0;color:#52745b}
+.complexity{font-size:12px;color:var(--muted)}.complexity b{color:var(--ink)}
+.stacks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.stackTitle{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px}.stackTitle small{color:var(--muted)}
+.track{height:185px;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));grid-auto-rows:76px;align-content:start;gap:6px;padding:8px;background:#f4f6f8;border-radius:10px;position:relative}
+.node{min-width:0;background:white;border:1px solid var(--border);border-radius:8px;text-align:center;padding:8px 2px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;will-change:transform;position:relative}
+.node.top{border:2px solid var(--accent);padding:7px 1px}.node strong{font-size:14px;overflow-wrap:anywhere;line-height:1.15}.node small{font-size:10px;color:var(--muted)}.binary{font:600 10px/1.5 ui-monospace,monospace;white-space:nowrap}.digit{padding:1px 2px;border-radius:3px}.digit.on{background:var(--accent);color:white}
+.empty{padding:16px;color:var(--muted)}
+.summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}.counter{background:#f4f6f8;text-align:center;border-radius:8px;padding:9px}.counter strong{display:block;font-size:18px}.counter small{color:var(--muted)}
+#message{height:42px;overflow:auto;color:var(--ink);font-size:12px;margin:8px 0 12px}#error{color:#ae5358;min-height:16px;font-size:11px;margin-top:5px}
+input[type=range]{width:100%;margin-top:12px;accent-color:var(--accent)}
+.growth-top{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.growth-top h2{margin:0}.growth-sample{font-weight:700;color:var(--ink)}
+.growth-plot{width:100%;height:196px;display:block;overflow:visible}
+.growth-legend{display:flex;flex-wrap:wrap;gap:8px 15px;margin:5px 0 9px;font-size:11px;color:var(--muted)}
+.growth-legend i{display:inline-block;width:15px;height:3px;vertical-align:middle;margin-right:5px;border-radius:4px}
+.growth-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.growth-controls input{flex:1;min-width:80px;margin:0}.scale-switch{display:flex;gap:4px}.scale-switch button{padding:6px 10px;min-height:32px;font-size:10px}.scale-switch button[aria-pressed="true"]{background:#e9eef5;border-color:#a6b5c8}.growth-values{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:10px 0 0}.growth-value{background:#f4f6f8;border-radius:8px;padding:9px}.growth-value b{display:block;font-size:15px;margin-top:4px}.growth-value span{font-size:10px;color:var(--muted)}
+.growth-foot{font-size:11px;color:var(--muted);min-height:30px;margin-top:8px}
+.growth-foot strong{color:var(--ink)}
+@media(max-width:520px){.growth-plot{height:172px}.growth-legend{gap:6px 10px;font-size:10px}}.small{font-size:11px;color:var(--muted)}
+/* Floating node is placed outside the stack tracks so cross-stack movement is not clipped. */
+.fly{position:fixed;z-index:9999;pointer-events:none;margin:0;box-shadow:0 7px 20px #2634471a}
+@media(max-width:700px){.stacks{grid-template-columns:1fr}.track{height:106px;grid-template-columns:repeat(12,minmax(0,1fr));grid-auto-rows:75px}.node{gap:3px}.binary{font-size:9px}.node small{font-size:9px}}
+@media(max-width:520px){body{margin:12px auto;padding:0 9px}.card{padding:11px}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.track{height:185px;grid-template-columns:repeat(6,minmax(0,1fr))}.node strong{font-size:12px}.row.controls{gap:5px}.row.controls button{padding:9px 10px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<header><span class="eyebrow">42 SCHOOL / PUSH_SWAP</span><h1>Radix Sort Visualizer</h1><p>See each bit, operation, and pass in action.</p></header>
+<section class="card">
+ <div class="row"><input id="input" type="text" aria-label="Stack A values, top to bottom" value="3 1 4 0 2" placeholder="e.g. 42 7 100 -5 23"><button class="primary" id="load">Load &amp; Sort</button></div>
+ <div id="error" role="alert"></div><span class="small">Enter 2–12 unique 32-bit integers. Leftmost = Stack A top.</span>
+</section>
+<section class="card">
+ <div class="row between"><h2>Complexity · O(n log n)</h2><span class="small" id="passName">Pass 1 / 3</span></div>
+ <div class="metrics">
+  <div class="metric"><span class="label">ELEMENTS · n</span><strong id="size">5</strong></div>
+  <div class="metric"><span class="label">BINARY PASSES</span><strong id="bits">3</strong></div>
+  <div class="metric"><span class="label">BIT POSITION</span><strong class="accent" id="bit">0</strong></div>
+  <div class="metric"><span class="label">TOTAL OPS</span><strong id="total">0</strong></div>
+ </div>
+ <div id="passbar" class="passbar"></div>
+ <div class="complexity" id="complexity"></div>
+</section>
+<section class="card" aria-labelledby="growth-title">
+ <div class="growth-top"><h2 id="growth-title">Sorting Strategy Complexity Comparison</h2><span class="small">Theoretical growth · not measured operations</span></div>
+ <div class="growth-legend"><span><i style="background:#7997b5"></i>Simple · O(n²)</span><span><i style="background:#88a99a"></i>Medium · O(n√n)</span><span><i style="background:#a396b8"></i>Radix · O(n log₂ n)</span></div>
+ <svg id="growthChart" class="growth-plot" viewBox="0 0 760 215" role="img" aria-label="Theoretical growth chart: x axis number of elements n, y axis growth function value. Comparing Simple n squared, Medium n square root n, and Radix n log base 2 of n."></svg>
+ <div class="growth-controls"><label for="growthN" class="label" style="white-space:nowrap">ELEMENTS · n</label><input id="growthN" type="range" min="2" max="128" value="5" step="1"><strong id="growthValue" class="growth-sample">5</strong><div class="scale-switch" role="group" aria-label="Vertical axis scale"><button type="button" id="scaleLog" aria-pressed="true">Log Y</button><button type="button" id="scaleLinear" aria-pressed="false">Linear Y</button></div></div>
+ <div class="growth-values"><div class="growth-value"><span>Simple · n²</span><b id="simpleValue">25</b></div><div class="growth-value"><span>Medium · n√n</span><b id="mediumValue">11.18</b></div><div class="growth-value"><span>Radix · n log₂ n</span><b id="radixValue">11.61</b></div></div>
+ <div class="growth-foot" id="growthInfo" aria-live="polite"></div>
+</section>
+<section class="card stacks">
+ <div><div class="stackTitle"><h2>Stack A</h2><small>TOP →</small></div><div class="track" id="a"></div></div>
+ <div><div class="stackTitle"><h2>Stack B</h2><small>TOP →</small></div><div class="track" id="b"></div></div>
+</section>
+<section class="card">
+ <div class="row between"><h2 id="operation">START</h2><span class="small" id="processed">0 / 5 checked</span></div>
+ <div id="message" aria-live="polite">Ready.</div>
+ <div class="row between"><h2 id="summaryTitle">Pass 1 operations</h2><span class="small">0 → pb · 1 → ra · return → pa</span></div>
+ <div class="summary">
+  <div class="counter"><strong id="ra">0</strong><small>ra</small></div>
+  <div class="counter"><strong id="pb">0</strong><small>pb</small></div>
+  <div class="counter"><strong id="pa">0</strong><small>pa</small></div>
+  <div class="counter"><strong id="passTotal">0</strong><small>Pass total</small></div>
+ </div>
+ <div class="row controls" style="margin-top:13px">
+  <button id="prev">← Previous</button><button class="primary" id="next">Next →</button><button id="play">▶ Play</button><button id="reset">↺ Reset</button>
+ </div>
+ <input type="range" id="progress" min="0" value="0" aria-label="Animation progress"><div class="small" id="step">Step 0</div>
+</section>
+<script>
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id);
+const palette=['#a396b8','#c49c8a','#be9ca8','#83a7aa','#b4ac89','#9ca9bf'];
+let steps=[],position=0,colors=[],n=0,bitCount=0,timer=null,busy=false,animations=[];
+const duration=440;
+function stop(){if(timer!==null)clearInterval(timer);timer=null;$('play').textContent='▶ Play';}
+function clearAnimations(){animations.forEach(a=>a.cancel());animations=[];document.querySelectorAll('.fly').forEach(e=>e.remove());busy=false;}
+function parse(text){const tokens=text.trim().split(/[\s,]+/).filter(Boolean);if(tokens.length<2||tokens.length>12)throw Error('Enter between 2 and 12 unique integers.');const values=tokens.map(token=>{if(!/^[+-]?\d+$/.test(token))throw Error('Only integers are allowed.');const x=Number(token);if(!Number.isSafeInteger(x)||x< -2147483648||x>2147483647)throw Error('Use signed 32-bit integers.');return x;});if(new Set(values).size!==values.length)throw Error('Duplicate values are not allowed.');return values;}
+function createColors(){colors=['#7997b5','#88a99a'];let pool=[];while(colors.length<bitCount){if(!pool.length){pool=palette.slice();for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}}colors.push(pool.pop());}}
+function build(values){n=values.length;bitCount=0;for(let m=n-1;m>0;m>>=1)bitCount++;createColors();let a=[],b=[],total=0;const ranks=new Map([...values].sort((x,y)=>x-y).map((v,i)=>[v,i]));a=values.map(value=>({value,index:ranks.get(value)}));steps=[];
+ const save=(op,bit,counts,checked,done,message,focus=null)=>steps.push({a:a.slice(),b:b.slice(),op,bit,counts:{...counts},checked,done,total,message,focus});
+ save('START',0,{ra:0,pb:0,pa:0},0,0,'Check bit 0 (the rightmost bit) for each node.');
+ for(let bit=0;bit<bitCount;bit++){
+  const c={ra:0,pb:0,pa:0};
+  for(let i=0;i<n;i++){
+   const node=a[0],one=(node.index>>bit)&1,op=one?'ra':'pb';
+   if(one)a.push(a.shift());else b.unshift(a.shift());
+   c[op]++;total++;save(op,bit,c,i+1,bit,`Index ${node.index} (${node.index.toString(2).padStart(bitCount,'0')}): bit ${bit} = ${one}. Execute ${op}.`,node.index);
+  }
+  while(b.length){const node=b.shift();a.unshift(node);c.pa++;total++;save('pa',bit,c,n,bit,`Push index ${node.index} from B back to the top of A.`,node.index);}
+  save('PASS COMPLETE',bit,c,n,bit+1,`Pass ${bit+1} complete: ${c.ra} ra + ${c.pb} pb + ${c.pa} pa = ${c.ra+c.pb+c.pa} operations.`);
+  if(bit<bitCount-1)save('NEXT BIT',bit+1,{ra:0,pb:0,pa:0},0,bit+1,`bit_position++ → ${bit+1}. Start checking the next bit from the right.`);
+ }
+ const last=steps[steps.length-1];save('DONE',bitCount-1,last.counts,n,bitCount,'Sorted! Stack A is in ascending order.');position=0;
+}
+// Exact theoretical functions for the three implemented strategy classes.
+// y-axis can be logarithmic for readability or linear for literal heights.
+let growthScale='log';
+function drawGrowthChart(){
+ const svg=$('growthChart'),W=760,H=215,L=64,R=18,T=13,B=42;
+ const minN=2,maxN=128,maxY=maxN*maxN,plotW=W-L-R,plotH=H-T-B;
+ const x=n=>L+(n-minN)/(maxN-minN)*plotW;
+ const y=v=>growthScale==='log'
+   ? T+(1-Math.log10(Math.max(1,v))/Math.log10(maxY))*plotH
+   : T+(1-v/maxY)*plotH;
+ const functions=[
+  {color:'#7997b5',f:n=>n*n},
+  {color:'#88a99a',f:n=>n*Math.sqrt(n)},
+  {color:'#a396b8',f:n=>n*Math.log2(n)}
+ ];
+ const tickValues=growthScale==='log'?[1,10,100,1000,10000]:[0,4000,8000,12000,16000];
+ let html='';
+ for(const v of tickValues){
+  const yy=y(v);
+  html+=`<line x1="${L}" y1="${yy}" x2="${W-R}" y2="${yy}" stroke="#e9edf1"/>`;
+  html+=`<text x="${L-9}" y="${yy+4}" text-anchor="end" fill="#7c8998" font-size="10">${v>=1000?(v/1000)+'k':v}</text>`;
+ }
+ for(const v of [2,32,64,96,128]){
+  html+=`<text x="${x(v)}" y="${H-20}" text-anchor="middle" fill="#7c8998" font-size="10">${v}</text>`;
+ }
+ html+=`<text x="${(L+W-R)/2}" y="${H-3}" text-anchor="middle" fill="#738094" font-size="10">Number of elements (n)</text>`;
+ html+=`<text x="13" y="${T+plotH/2}" text-anchor="middle" transform="rotate(-90 13 ${T+plotH/2})" fill="#738094" font-size="10">Growth value (y)${growthScale==='log'?' · log scale':''}</text>`;
+ for(const curve of functions){
+  let path='';
+  for(let v=2;v<=128;v++)path+=(v===2?'M':'L')+x(v).toFixed(2)+','+y(curve.f(v)).toFixed(2)+' ';
+  html+=`<path d="${path}" stroke="${curve.color}" stroke-width="2.7" fill="none" stroke-linecap="round"/>`;
+ }
+ const selected=Number($('growthN').value);
+ html+=`<line x1="${x(selected)}" x2="${x(selected)}" y1="${T}" y2="${H-B}" stroke="#9ca7b5" stroke-dasharray="3 4"/>`;
+ for(const curve of functions){
+  html+=`<circle cx="${x(selected)}" cy="${y(curve.f(selected))}" r="4.3" fill="${curve.color}" stroke="white" stroke-width="1.5"/>`;
+ }
+ svg.innerHTML=html;
+ const format=v=>v.toLocaleString('en-US',{maximumFractionDigits:2});
+ $('growthValue').textContent=selected;
+ $('simpleValue').textContent=format(selected*selected);
+ $('mediumValue').textContent=format(selected*Math.sqrt(selected));
+ $('radixValue').textContent=format(selected*Math.log2(selected));
+ $('scaleLog').setAttribute('aria-pressed',String(growthScale==='log'));
+ $('scaleLinear').setAttribute('aria-pressed',String(growthScale==='linear'));
+ $('growthInfo').innerHTML=`<strong>n = ${selected}:</strong> compare the theoretical growth of Simple, Medium and Radix. These y-values illustrate asymptotic complexity, not actual push_swap instruction counts.`;
+}
+$('growthN').addEventListener('input',drawGrowthChart);
+$('scaleLog').addEventListener('click',()=>{growthScale='log';drawGrowthChart();});
+$('scaleLinear').addEventListener('click',()=>{growthScale='linear';drawGrowthChart();});
+function binary(idx,bit){return idx.toString(2).padStart(bitCount,'0').split('').map((d,i)=>`<span class="digit ${bitCount-i-1===bit?'on':''}">${d}</span>`).join('');}
+function stackHTML(items,bit,which){if(!items.length)return '<span class="empty">Empty</span>';return items.map((node,i)=>`<div class="node ${which==='a'&&i===0?'top':''}" data-id="${node.index}"><strong>${node.value}</strong><small>index ${node.index}</small><span class="binary">${binary(node.index,bit)}</span></div>`).join('');}
+function positions(){const map=new Map();document.querySelectorAll('.node').forEach(el=>{map.set(el.dataset.id,{rect:el.getBoundingClientRect(),element:el,stack:el.closest('.track').id});});return map;}
+function render(){const s=steps[position],c=s.counts;document.documentElement.style.setProperty('--accent',colors[s.bit]);$('a').innerHTML=stackHTML(s.a,s.bit,'a');$('b').innerHTML=stackHTML(s.b,s.bit,'b');$('size').textContent=n;$('bits').textContent=bitCount;$('bit').textContent=s.bit;$('total').textContent=s.total;$('passName').textContent=`Pass ${s.bit+1} / ${bitCount}`;$('operation').textContent=s.op;$('processed').textContent=`${s.checked} / ${n} checked`;$('message').textContent=s.message;$('summaryTitle').textContent=`Pass ${s.bit+1} operations`;$('ra').textContent=c.ra;$('pb').textContent=c.pb;$('pa').textContent=c.pa;$('passTotal').textContent=c.ra+c.pb+c.pa;
+ $('complexity').innerHTML=`<b>${n} elements × ${bitCount} passes = ${n*bitCount} bit checks</b>. Each pass takes O(n), and the number of passes grows as ⌈log₂ n⌉.`;
+ $('passbar').innerHTML=Array.from({length:bitCount},(_,i)=>`<div class="pass ${i<s.done?'done':i===s.bit?'current':''}">bit ${i}</div>`).join('');$('progress').max=steps.length-1;$('progress').value=position;$('step').textContent=`Step ${position} / ${steps.length-1}`;$('prev').disabled=position===0;$('next').disabled=position===steps.length-1;if(position===steps.length-1)stop();
+}
+function animateTransition(oldMap,operation){const newMap=positions(),moving=[];for(const [id,end] of newMap){const start=oldMap.get(id);if(!start)continue;const dx=start.rect.left-end.rect.left,dy=start.rect.top-end.rect.top;if(Math.abs(dx)<.5&&Math.abs(dy)<.5)continue;
+ if(start.stack!==end.stack){const ghost=end.element.cloneNode(true);ghost.classList.add('fly');Object.assign(ghost.style,{left:start.rect.left+'px',top:start.rect.top+'px',width:start.rect.width+'px',height:start.rect.height+'px'});document.body.appendChild(ghost);end.element.style.visibility='hidden';const animation=ghost.animate([{transform:'translate(0,0)'},{transform:`translate(${end.rect.left-start.rect.left}px,${end.rect.top-start.rect.top}px)`}],{duration,easing:'cubic-bezier(.2,.7,.2,1)',fill:'forwards'});animations.push(animation);moving.push(animation.finished.catch(()=>{}).then(()=>{ghost.remove();end.element.style.visibility='';}));
+ }else{const animation=end.element.animate([{transform:`translate(${dx}px,${dy}px)`},{transform:'translate(0,0)'}],{duration,easing:'cubic-bezier(.2,.7,.2,1)'});animations.push(animation);moving.push(animation.finished.catch(()=>{}));}
+ }return Promise.all(moving);
+}
+async function goto(next,animated){if(busy)return;const target=Math.max(0,Math.min(steps.length-1,next));if(target===position)return;const before=animated?positions():null;const old=steps[position];position=target;render();const current=steps[position];if(!animated||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+ const isMove=['ra','pb','pa'].includes(position>0&&target>0&&target<steps.length&&target===steps.indexOf(old)+1?current.op:old.op);
+ if(!isMove)return;
+ busy=true;try{await animateTransition(before,current.op);}finally{clearAnimations();}
+}
+function load(){stop();clearAnimations();try{const values=parse($('input').value);$('error').textContent='';build(values);render();}catch(err){$('error').textContent=err.message;}}
+$('load').addEventListener('click',load);$('input').addEventListener('keydown',e=>{if(e.key==='Enter')load();});$('prev').addEventListener('click',()=>{stop();goto(position-1,true);});$('next').addEventListener('click',()=>{stop();goto(position+1,true);});$('reset').addEventListener('click',()=>{stop();clearAnimations();position=0;render();});$('progress').addEventListener('input',e=>{stop();clearAnimations();position=Number(e.target.value);render();});$('play').addEventListener('click',()=>{if(timer!==null){stop();return;}if(position===steps.length-1){position=0;render();}$('play').textContent='⏸ Pause';timer=setInterval(()=>{if(!busy)goto(position+1,true);},750);});
+load();
+drawGrowthChart();
+})();
+</script>
+</body>
+</html>
