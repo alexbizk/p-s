@@ -33,25 +33,23 @@ make re     # fclean + all
 ### Run
 
 ```sh
-./push_swap 3 2 1                  # default strategy: --adaptive
-./push_swap "3 2 1"                # numbers in one string also work
-./push_swap --simple 5 4 3 2 1     # force a strategy
-./push_swap --medium ...
-./push_swap --complex ...
-./push_swap --adaptive ...
-./push_swap --bench 4 67 3 87 23   # print statistics to stderr after sorting
+./push_swap [options] numbers...
 ```
 
-Options can be placed anywhere among the numbers.
+| Option | Effect |
+|---|---|
+| (none) | same as `--adaptive` |
+| `--simple` | force the O(n²) algorithm |
+| `--medium` | force the O(n√n) algorithm |
+| `--complex` | force the O(n log n) algorithm |
+| `--adaptive` | choose by disorder (default) |
+| `--bench` | after sorting, print statistics to stderr |
+
+Numbers can be separate arguments (`3 2 1`) or one string (`"3 2 1"`). Options can be placed anywhere among the numbers.
 
 ### Output
 
-Operations are printed on **stdout**, one per line. The `--bench` report is printed on **stderr** after sorting, so it never mixes with the operations:
-
-```sh
-ARG="4 67 3 87 23"; ./push_swap $ARG | ./checker_linux $ARG         # OK
-./push_swap --bench $ARG 2> bench.txt | ./checker_linux $ARG        # OK, report in bench.txt
-```
+Operations are printed on **stdout**, one per line. The `--bench` report is printed on **stderr** after sorting, so it never mixes with the operations and the checker only reads the operations.
 
 Example report for 100 random numbers:
 
@@ -74,7 +72,8 @@ Example report for 100 random numbers:
 
 With no arguments the program prints nothing.
 
-## Evaluation commands
+## Evaluation commands aka the test checklist
+
 
 Run `bash` first: the subject's examples are written for bash, and zsh does not split `$ARG` on spaces. 
 Then choose the checker once; every command below uses `$CHECKER`:
