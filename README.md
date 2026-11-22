@@ -390,5 +390,3 @@ We used AI as a tutor during the project:
 - to explain the subject, the stack operations, Big-O notation, the disorder metric and the algorithms in plain language;
 - to review our code and find bugs (for example the `long` overflow in number validation, missing files in the Makefile, and Norm issues);
 - to suggest the design of some parts (the static operation counter, option parsing, the `--bench` output, `adaptive_choice`) and to write a first draft of this README.
-
-Every line of code was typed, tested and understood by us, and both of us can explain any part of it.
