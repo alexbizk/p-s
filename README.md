@@ -74,6 +74,98 @@ Example report for 100 random numbers:
 
 With no arguments the program prints nothing.
 
+## Evaluation commands
+
+Run `bash` first: the subject's examples are written for bash, and zsh does not split `$ARG` on spaces. 
+Then choose the checker once; every command below uses `$CHECKER`:
+
+```sh
+bash
+CHECKER=./checker_Mac        # macOS
+CHECKER=./checker_linux      # Linux (run only the line for your machine)
+chmod +x $CHECKER
+```
+
+### Build
+
+```sh
+make
+make            # second time: "Nothing to be done" (no relink)
+norminette
+```
+
+### Basic sorting
+
+```sh
+./push_swap 2 1 3 6 5 8                     # 16 operations
+./push_swap 3 2 1                           # ra sa
+./push_swap 1 2 3                           # nothing (already sorted)
+./push_swap                                 # nothing (no arguments)
+./push_swap "3 2 1"                         # numbers in one string
+```
+
+### Each strategy, checked by the checker
+
+```sh
+ARG="4 67 3 87 23"
+./push_swap $ARG | $CHECKER $ARG                 # OK
+./push_swap --simple $ARG | $CHECKER $ARG        # OK
+./push_swap --medium $ARG | $CHECKER $ARG        # OK
+./push_swap --complex $ARG | $CHECKER $ARG       # OK
+./push_swap --adaptive $ARG | $CHECKER $ARG      # OK
+./push_swap --adaptive $ARG | wc -l                     # 9
+./push_swap --simple 5 4 3 2 1                          # 14 operations
+```
+
+### Performance (100 and 500 random numbers)
+
+```sh
+ARG=$(shuf -i 0-9999 -n 100 | tr '\n' ' ')
+./push_swap $ARG | wc -l                                # < 1500 (good)
+./push_swap $ARG | $CHECKER $ARG                 # OK
+
+ARG=$(shuf -i 0-9999 -n 500 | tr '\n' ' ')
+./push_swap $ARG | wc -l                                # < 12000 (pass)
+./push_swap $ARG | $CHECKER $ARG                 # OK
+```
+
+On macOS without `shuf`: `ARG=$(seq 1 500 | sort -R | tr '\n' ' ')`.
+
+### Benchmark mode
+
+```sh
+ARG="4 67 3 87 23"
+./push_swap --bench --adaptive $ARG 2> bench.txt | $CHECKER $ARG ; cat bench.txt
+./push_swap --bench $ARG > /dev/null                    # only the report
+# Without --bench, nothing must go to stderr:
+#   2>&1        send stderr into the pipe
+#   >/dev/null  throw stdout (the operations) away
+#   wc -c       count the characters left: 0 = no report
+./push_swap $ARG 2>&1 >/dev/null | wc -c                # 0
+```
+
+### Errors (each prints `Error` on stderr)
+
+```sh
+./push_swap --adaptive 0 one 2 3
+./push_swap --simple 3 2 3
+./push_swap 1 1
+./push_swap 2147483648
+./push_swap -2147483649
+./push_swap 1 + 2
+./push_swap ""
+./push_swap --foo 1 2
+./push_swap 1 1 2> /dev/null                            # prints nothing: Error goes to stderr
+```
+
+### Memory leaks
+
+```sh
+leaks --atExit -- ./push_swap 5 4 3 2 1                 # macOS
+valgrind --leak-check=full ./push_swap 5 4 3 2 1        # Linux
+valgrind --leak-check=full ./push_swap 1 1              # also on error
+```
+
 ## Algorithms
 
 All strategies share the same basic move: **take numbers out of `a` into `b` in a smart order, then bring them back so that `a` ends up sorted**. The algorithms differ in *which* number they take next, and that choice decides how many rotations they need.
