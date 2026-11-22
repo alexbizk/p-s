@@ -6,7 +6,7 @@
 /*   By: weitwang <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/28 15:12:11 by weit              #+#    #+#             */
-/*   Updated: 2026/11/17 16:18:16 by weitwang         ###   ########.fr       */
+/*   Updated: 2026/11/22 21:13:02 by weitwang         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,20 @@ static void	sort_with_options(t_node **a, int strategy, int bench)
 	ft_nodeclear(&b);
 }
 
+static int	only_flags(int argc, char **argv)
+{
+	int	i;
+
+	i = 1;
+	while (i < argc)
+	{
+		if (!is_flag(argv[i]))
+			return (0);
+		i++;
+	}
+	return (1);
+}
+
 int	main(int argc, char **argv)
 {
 	t_node	*a;
@@ -42,6 +56,8 @@ int	main(int argc, char **argv)
 		ft_putendl_fd("Error", 2);
 		return (1);
 	}
+	if (only_flags(argc, argv))
+		return (0);
 	a = parse_args(argc, argv);
 	if (!a)
 		return (1);

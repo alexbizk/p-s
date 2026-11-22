@@ -6,92 +6,82 @@
 /*   By: weitwang <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/11/15 22:44:25 by weitwang          #+#    #+#             */
-/*   Updated: 2026/11/17 16:23:15 by weitwang         ###   ########.fr       */
+/*   Updated: 2026/11/22 21:21:08 by weitwang         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "push_swap.h"
 
-static int	get_chunk_size(int node_count)
+static int	get_chunk_size(int size)
 {
 	int	chunk_size;
 
 	chunk_size = 1;
-	while (chunk_size * chunk_size < node_count)
+	while ((long)chunk_size * chunk_size < size)
 		chunk_size++;
 	return (chunk_size);
 }
 
-static void	move_max_to_top(t_node **b, int position)
+static void	scan_chunk(t_node **a, t_node **b, int min, int chunk_size)
 {
-	int	node_count;
+	int	scanned;
 
-	node_count = stack_size(*b);
-	if (position <= node_count / 2)
+	scanned = stack_size(*a);
+	while (scanned > 0)
 	{
-		while (position > 0)
+		if ((*a)->index >= min && (*a)->index < min + chunk_size)
 		{
-			rb(b);
-			position--;
+			pb(a, b);
+			if ((*b)->index < min + chunk_size / 2)
+				rb(b);
 		}
-	}
-	else
-	{
-		while (position < node_count)
-		{
-			rrb(b);
-			position++;
-		}
+		else
+			ra(a);
+		scanned--;
 	}
 }
 
-static void	push_back_to_a(t_node **a, t_node **b)
+static void	push_chunks(t_node **a, t_node **b, int size)
+{
+	int	chunk_size;
+	int	min;
+
+	chunk_size = get_chunk_size(size) * 2;
+	min = 0;
+	while (min < size)
+	{
+		scan_chunk(a, b, min, chunk_size);
+		min += chunk_size;
+	}
+}
+
+static void	push_back_to_a(t_node **a, t_node **b, int size)
 {
 	int	position;
 
 	while (*b)
 	{
 		position = find_max_position(*b);
-		move_max_to_top(b, position);
-		pa(a, b);
-	}
-}
-
-static void	push_chunk_to_b(t_node **a, t_node **b,
-		int chunk_start, int chunk_end)
-{
-	int	chunk_pushed;
-
-	chunk_pushed = 0;
-	while (chunk_pushed < chunk_end - chunk_start + 1)
-	{
-		if ((*a)->index >= chunk_start && (*a)->index <= chunk_end)
+		if (position <= size / 2)
 		{
-			pb(a, b);
-			chunk_pushed++;
+			while (position-- > 0)
+				rb(b);
 		}
 		else
-			ra(a);
+		{
+			while (position++ < size)
+				rrb(b);
+		}
+		pa(a, b);
+		size--;
 	}
 }
 
 void	medium_sort(t_node **a, t_node **b)
 {
-	int	node_count;
-	int	chunk_size;
-	int	chunk_start;
-	int	chunk_end;
+	int	size;
 
-	node_count = stack_size(*a);
-	chunk_size = get_chunk_size(node_count);
-	chunk_start = 0;
-	while (chunk_start < node_count)
-	{
-		chunk_end = chunk_start + chunk_size - 1;
-		if (chunk_end >= node_count)
-			chunk_end = node_count - 1;
-		push_chunk_to_b(a, b, chunk_start, chunk_end);
-		chunk_start += chunk_size;
-	}
-	push_back_to_a(a, b);
+	size = stack_size(*a);
+	push_chunks(a, b, size);
+	push_back_to_a(a, b, size);
 }

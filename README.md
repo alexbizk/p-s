@@ -55,10 +55,10 @@ Example report for 100 random numbers:
 
 ```
 [bench] disorder:  47.78%
-[bench] strategy:  Adaptive / O(n*sqrt(n))
-[bench] total_ops:  790
+[bench] strategy:  Adaptive / O(n√n)
+[bench] total_ops:  634
 [bench] sa:  0  sb:  0  ss:  0  pa:  100  pb:  100
-[bench] ra:  400  rb:  93  rr:  0  rra:  0  rrb:  97  rrr:  0
+[bench] ra:  200  rb:  120  rr:  0  rra:  0  rrb:  114  rrr:  0
 ```
 
 ### Errors
@@ -255,27 +255,33 @@ Example `./push_swap --simple 2 4 1 3` (12 moves):
 
 ### 2. Medium: chunk sort, O(n√n)
 
-**Idea.** Searching `a` for one exact number is slow. Searching for *any* number of a group is fast, because one of them is usually close. So we split the indexes into groups (chunks) of size k ≈ √n, move the groups to `b` one by one, then bring the numbers back largest first.
+**Idea.** Searching `a` for one exact number is slow. Searching for *any* number of a group is fast, because one of them is usually close. So we split the indexes into groups (chunks), move the groups to `b` one by one, then bring the numbers back largest first. While pushing, we also keep each chunk roughly ordered in `b`, so that bringing them back is cheap.
 
-Chunk size = the smallest k with k × k ≥ n: 10 for 100 numbers, 23 for 500.
+Chunk size = 2k, where k is the smallest number with k × k ≥ n: 20 for 100 numbers, 46 for 500.
 
-**Phase 1: push the chunks to `b`, smallest chunk first.** Look at the top of `a`: if it belongs to the current chunk, `pb`; otherwise `ra` and look at the next one. When the chunk is complete, move on to the next chunk.
+**Phase 1: push the chunks to `b`, smallest chunk first.** Turn `a` once around, looking at every number:
+
+- it belongs to the current chunk → `pb`;
+  - if it is in the **smaller half** of the chunk, also `rb`: it sinks to the bottom of `b`;
+  - if it is in the **larger half**, it stays on top;
+- otherwise → `ra` and look at the next one.
 
 **Phase 2: bring back the largest each time.** Find the largest index in `b`, bring it to the top with `rb` or `rrb` (the shorter way), `pa`. Repeat until `b` is empty.
 
-Example `./push_swap --medium 8 3 6 0 7 1 5 2 4` (9 numbers, so k = 3, chunks `0–2`, `3–5`, `6–8`; 32 moves):
+Example `./push_swap --medium 11 3 14 6 0 9 13 1 7 15 4 10 2 12 8 5` (16 numbers, so k = 4, chunks of 8: `0–7` and `8–15`; 63 moves):
 
 | After | a (top → bottom) | b (top → bottom) |
 |---|---|---|
-| start | `8 3 6 0 7 1 5 2 4` | |
-| chunk `0–2` pushed | `4 8 3 6 7 5` | `2 1 0` |
-| chunk `3–5` pushed | `8 6 7` | `5 3 4 2 1 0` |
-| chunk `6–8` pushed | | `7 6 8 5 3 4 2 1 0` |
-| phase 2 done | `0 1 2 3 4 5 6 7 8` | |
+| start | `11 3 14 6 0 9 13 1 7 15 4 10 2 12 8 5` | |
+| chunk `0–7` pushed | `11 14 9 13 15 10 12 8` | `5 4 7 6` `3 0 1 2` |
+| chunk `8–15` pushed | | `15 13 14` `5 4 7 6 3 0 1 2` `11 9 10 8 12` |
+| phase 2 done | `0 1 2 … 15` | |
 
-After phase 1, `b` is not sorted, but it is **sorted by groups**: the largest group sits on top. So in phase 2 the current maximum is always within the top few positions, never deep down.
+After the first chunk, its larger half (`4–7`) is on top of `b` and its smaller half (`0–3`) at the bottom. The second chunk then wraps around them: most of its larger half on top, its smaller half at the bottom. So in phase 2 the current maximum is always close to the **top or the bottom** of `b`, and `rb` or `rrb` reaches it in a few moves.
 
-**Cost.** Phase 1: one chunk needs at most one full turn of `a` (≤ n moves), and there are √n chunks → at most n√n. Phase 2: each of the n numbers needs at most about √n rotations → n√n. Total O(n√n). Measured: about 800 moves for 100 random numbers (our best strategy for 100), about 8100 for 500.
+**Cost.** Phase 1: each chunk needs one full turn of `a` (≤ n moves, plus at most one `rb` per number), and there are about √n / 2 chunks → O(n√n). Phase 2: each of the n numbers needs at most about one chunk of rotations (≈ 2√n) → O(n√n). Total O(n√n).
+
+Measured on random input: about **655** moves for 100 numbers (max 700 in 30 runs) and about **5855** for 500. The ratio moves / (n√n) stays flat as n grows (0.65 at 100, 0.46 at 2500), which confirms the n√n growth.
 
 ### 3. Complex: LSD radix sort, O(n log n)
 
@@ -301,7 +307,7 @@ The largest index is 3, which needs 2 bits, so there are 2 passes:
 
 **Why it works.** In each pass, numbers with the same bit keep their relative order (`pb` reverses them, `pa` reverses them back). So after sorting by bit 0, then by bit 1, and so on, the order by all bits together is correct.
 
-**Cost.** Each pass costs at most 2n moves, and there are ⌈log₂ n⌉ passes (7 for 100 numbers, 9 for 500) → O(n log n). Unlike the other two, its cost **does not depend on the order** of the input: 1084 moves for any 100 numbers, 6784 for any 500. That is why it wins on very shuffled input and wastes moves on almost-sorted input.
+**Cost.** Each pass costs at most 2n moves, and there are ⌈log₂ n⌉ passes (7 for 100 numbers, 9 for 500) → O(n log n). Unlike the other two, its cost **does not depend on the order** of the input: 1084 moves for any 100 numbers, 6784 for any 500. It wastes moves on almost-sorted input, but it grows as n log n: at 100 and 500 numbers our chunk sort happens to use fewer moves on random input, yet from about 1000 numbers on radix is cheaper (2500 numbers: 46 348 moves vs 58 792 for chunk sort).
 
 [Interactive Radix Sort Visualizer](https://alexbizk.github.io/p-s/)
 
@@ -316,22 +322,24 @@ The largest index is 3, which needs 2 bits, so there are 2 passes:
 |---|---|---|
 | < 0.2 | simple | most numbers are near their place, so the minimum is always close to the top |
 | 0.2 – 0.5 | medium | balanced cost for partly shuffled input |
-| ≥ 0.5 | complex | radix costs the same whatever the order, so it wins when the input is very messy |
+| ≥ 0.5 | complex | the subject requires an O(n log n) method here; radix cost does not depend on the order and grows slowest for large n |
 
-The thresholds live in a single function, `adaptive_choice`, which `--bench` also calls, so they exist in one place only.
+The three regimes and their complexity classes are fixed by the subject (< 0.2 → O(n²), 0.2–0.5 → O(n√n), ≥ 0.5 → O(n log n)). They live in a single function, `adaptive_choice`, which `--bench` also calls, so they exist in one place only.
 
 Measured results (number of moves, same input for every strategy, best in bold):
 
 | n | Disorder | simple | medium | complex | adaptive |
 |---|---|---|---|---|---|
-| 100 | 5.8% | **264** | 400 | 1084 | 264 |
-| 100 | 22.1% | 816 | **679** | 1084 | 679 |
-| 100 | 42.0% | 1536 | **771** | 1084 | 771 |
-| 500 | 0.8% | **1491** | 1776 | 6784 | 1491 |
-| 500 | 5.0% | **4038** | 4648 | 6784 | 4038 |
-| 500 | 13.1% | 10038 | **6246** | 6784 | 10038 |
+| 100 | 5.8% | **264** | 518 | 1084 | 264 |
+| 100 | 11.5% | **475** | 567 | 1084 | 475 |
+| 100 | 22.1% | 816 | **610** | 1084 | 610 |
+| 100 | 42.0% | 1536 | **650** | 1084 | 650 |
+| 500 | 0.8% | **1491** | 3998 | 6784 | 1491 |
+| 500 | 5.0% | **4038** | 4394 | 6784 | 4038 |
+| 500 | 13.1% | 10038 | **4892** | 6784 | 10038 |
+| 500 | 46.1% | 32776 | **5816** | 6784 | 5816 |
 
-The adaptive strategy picks the best algorithm in most cases. The last row shows the limit of the default thresholds: with 500 numbers, simple sort becomes expensive already at about 13% disorder.
+The adaptive strategy picks the cheapest algorithm in most cases. Two limits come from the fixed regimes: with 500 numbers simple sort is already expensive at about 13% disorder, and for random input (disorder ≈ 0.5) the subject requires the O(n log n) method even when chunk sort would use fewer moves at this size.
 
 ### Complexity summary
 
@@ -362,8 +370,13 @@ Libft/           our libft
 
 ## Contributions
 
-- **weitwang**: ...
-- **furbozor**: ...
+Each of us first wrote a complete push_swap on our own: parsing, the 11 operations, the four strategies and `--bench`. Then we went through both versions together. They use the same strategies (selection sort, chunk sort, radix sort, adaptive selection by disorder); the main differences were:
+
+- **Medium sort**: furbozor's chunk sort was faster (about 655 moves instead of 824 for 100 random numbers, about 5855 instead of 8099 for 500), so the final version uses his `medium_sort`.
+- **Counting operations**: weitwang counts each move inside the operation itself (`put_op` prints it and increments a static array in `op_counter`); furbozor kept the counters in a struct.
+
+- **weitwang**: a complete implementation (parsing and error handling, the 11 operations with the move counter in `put_op`, disorder, small sort, the four strategies, `--bench`) and the README.
+- **furbozor**: a complete implementation (parsing and error handling, the 11 operations with a struct for the counters, disorder, the four strategies, `--bench`); the chunk sort used for `--medium` in this repository is his.
 
 ## Resources
 

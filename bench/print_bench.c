@@ -6,7 +6,7 @@
 /*   By: weitwang <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/11/17 01:50:44 by weitwang          #+#    #+#             */
-/*   Updated: 2026/11/17 01:57:20 by weitwang         ###   ########.fr       */
+/*   Updated: 2026/11/22 21:03:38 by weitwang         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,9 +28,9 @@ static void	put_percent(double disorder)
 static char	*complexity(int strategy)
 {
 	if (strategy == STRAT_SIMPLE)
-		return ("O(n^2)");
+		return ("O(n²)");
 	if (strategy == STRAT_MEDIUM)
-		return ("O(n*sqrt(n))");
+		return ("O(n√n)");
 	return ("O(n log n)");
 }
 
